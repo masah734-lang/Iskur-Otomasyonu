@@ -1,4 +1,6 @@
-﻿using Iskur.Api.Entities;
+﻿using Iskur.Api.Entities.Identity;
+using Iskur.Api.Entities.Organization;
+using Iskur.Api.Entities.Students;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iskur.Api.Configurations;

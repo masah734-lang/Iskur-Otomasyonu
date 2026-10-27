@@ -1,4 +1,4 @@
-﻿namespace Iskur.Api.Entities;
+﻿namespace Iskur.Api.Entities.Common;
 
 public abstract class BaseEntity
 {

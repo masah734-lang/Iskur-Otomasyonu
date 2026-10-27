@@ -1,4 +1,4 @@
-﻿namespace Iskur.Api.Entities;
+﻿namespace Iskur.Api.Entities.Students;
 
 public enum ParticipationStatus
 {

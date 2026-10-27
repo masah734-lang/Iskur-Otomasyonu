@@ -1,5 +1,5 @@
 using Iskur.Api.Data;
-using Iskur.Api.Entities;
+using Iskur.Api.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 

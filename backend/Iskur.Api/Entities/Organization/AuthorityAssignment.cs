@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Iskur.Api.Entities.Common;
+using Iskur.Api.Entities.Identity;
+using Microsoft.AspNetCore.Identity;
 
-namespace Iskur.Api.Entities;
+namespace Iskur.Api.Entities.Organization;
 
 public class AuthorityAssignment : BaseEntity
 {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace Iskur.Api.Entities;
+namespace Iskur.Api.Entities.Identity;
 
 public class ApplicationUser : IdentityUser<Guid>
 {

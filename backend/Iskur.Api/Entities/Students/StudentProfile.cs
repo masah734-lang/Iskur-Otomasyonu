@@ -1,4 +1,8 @@
-﻿namespace Iskur.Api.Entities;
+﻿using Iskur.Api.Entities.Common;
+using Iskur.Api.Entities.Identity;
+using Iskur.Api.Entities.Organization;
+
+namespace Iskur.Api.Entities.Students;
 
 public class StudentProfile : BaseEntity
 {

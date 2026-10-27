@@ -1,4 +1,6 @@
-﻿namespace Iskur.Api.Entities;
+﻿using Iskur.Api.Entities.Common;
+
+namespace Iskur.Api.Entities.Organization;
 
 public class Department : BaseEntity
 {

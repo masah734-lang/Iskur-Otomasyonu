@@ -22,29 +22,24 @@ namespace Iskur.Api.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Iskur.Api.Entities.AdvisorAssignment", b =>
+            modelBuilder.Entity("Iskur.Api.Entities.AbsenceReport", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("AdvisorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("AssignedById")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<DateOnly?>("EndsOn")
-                        .HasColumnType("date");
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<Guid>("ParticipationId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Reason")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                    b.Property<Guid>("ReportedById")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -52,31 +47,352 @@ namespace Iskur.Api.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<DateOnly>("StartsOn")
-                        .HasColumnType("date");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AdvisorId");
+                    b.HasIndex("ParticipationId");
 
-                    b.HasIndex("AssignedById");
+                    b.HasIndex("ReportedById");
 
-                    b.HasIndex("ParticipationId")
-                        .IsUnique()
-                        .HasFilter("[EndsOn] IS NULL");
-
-                    b.HasIndex("ParticipationId", "StartsOn", "EndsOn");
-
-                    b.ToTable("AdvisorAssignments", null, t =>
+                    b.ToTable("AbsenceReports", null, t =>
                         {
-                            t.HasCheckConstraint("CK_AdvisorAssignments_Dates", "[EndsOn] IS NULL OR [EndsOn] > [StartsOn]");
+                            t.HasCheckConstraint("CK_AbsenceReports_Status", "[Status] IN (0, 1, 2, 3)");
                         });
                 });
 
-            modelBuilder.Entity("Iskur.Api.Entities.ApplicationUser", b =>
+            modelBuilder.Entity("Iskur.Api.Entities.AbsenceReportSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AbsenceReportId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("WorkSessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkSessionId");
+
+                    b.HasIndex("AbsenceReportId", "WorkSessionId")
+                        .IsUnique();
+
+                    b.ToTable("AbsenceReportSessions");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.AdministrativeDecision", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("DecidedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly>("DecisionDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("DecisionType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("ParticipationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("PreviousDecisionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DecidedById");
+
+                    b.HasIndex("ParticipationId");
+
+                    b.HasIndex("PreviousDecisionId");
+
+                    b.ToTable("AdministrativeDecisions");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.AttendanceCorrection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("NewMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<int>("NewStatus")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("PerformedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("PreviousMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PreviousStatus")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<Guid>("SessionAttendanceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PerformedById");
+
+                    b.HasIndex("SessionAttendanceId");
+
+                    b.ToTable("AttendanceCorrections", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_AttendanceCorrections_Minutes", "[PreviousMinutes] >= 0 AND [NewMinutes] >= 0");
+
+                            t.HasCheckConstraint("CK_AttendanceCorrections_NewStatus", "[NewStatus] IN (0, 1, 2, 3)");
+
+                            t.HasCheckConstraint("CK_AttendanceCorrections_PreviousStatus", "[PreviousStatus] IN (0, 1, 2, 3)");
+                        });
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.AuditEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("CorrelationId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid?>("RecordId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RestrictedDetails")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Summary")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("EntityType", "RecordId", "CreatedAt");
+
+                    b.ToTable("AuditEntries");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.DecisionDocument", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AdministrativeDecisionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<Guid>("StoredFileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StoredFileId");
+
+                    b.HasIndex("AdministrativeDecisionId", "StoredFileId")
+                        .IsUnique();
+
+                    b.ToTable("DecisionDocuments");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Documents.StoredFile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("OriginalName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("StorageKey")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("UploadedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StorageKey")
+                        .IsUnique();
+
+                    b.HasIndex("UploadedById");
+
+                    b.ToTable("StoredFiles", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_StoredFiles_Size", "[SizeBytes] > 0 AND [SizeBytes] <= 10485760");
+                        });
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.EvaluationNote", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("ParticipationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("PreviousNoteId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<Guid?>("StudentTaskId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("ParticipationId");
+
+                    b.HasIndex("PreviousNoteId")
+                        .IsUnique()
+                        .HasFilter("[PreviousNoteId] IS NOT NULL");
+
+                    b.HasIndex("StudentTaskId");
+
+                    b.ToTable("EvaluationNotes");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Identity.ApplicationUser", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -166,7 +482,364 @@ namespace Iskur.Api.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("Iskur.Api.Entities.AuthorityAssignment", b =>
+            modelBuilder.Entity("Iskur.Api.Entities.LeaveDocument", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("LeaveRequestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<Guid>("StoredFileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StoredFileId");
+
+                    b.HasIndex("LeaveRequestId", "StoredFileId")
+                        .IsUnique();
+
+                    b.ToTable("LeaveDocuments");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Leaves.LeaveMovement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal>("DayAmount")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("decimal(9,2)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<Guid?>("LeavePolicyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("LeaveRequestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("MovementType")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ParticipationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PerformedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LeavePolicyId");
+
+                    b.HasIndex("LeaveRequestId");
+
+                    b.HasIndex("ParticipationId");
+
+                    b.HasIndex("PerformedById");
+
+                    b.ToTable("LeaveMovements", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_LeaveMovements_Amount", "[DayAmount] <> 0");
+
+                            t.HasCheckConstraint("CK_LeaveMovements_Type", "[MovementType] IN (0, 1, 2, 3)");
+                        });
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Leaves.LeavePolicy", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool?>("DeductsEntitlement")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal?>("EntitlementDays")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("decimal(9,2)");
+
+                    b.Property<string>("EntitlementScope")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal?>("HalfDayDeduction")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("decimal(9,2)");
+
+                    b.Property<Guid>("LeaveTypeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ProgramPeriodId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateOnly>("ValidFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("ValidUntil")
+                        .HasColumnType("date");
+
+                    b.Property<decimal?>("WarningThresholdDays")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("decimal(9,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LeaveTypeId");
+
+                    b.HasIndex("ProgramPeriodId");
+
+                    b.ToTable("LeavePolicies", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_LeavePolicies_Dates", "[ValidUntil] IS NULL OR [ValidUntil] > [ValidFrom]");
+
+                            t.HasCheckConstraint("CK_LeavePolicies_Entitlement", "[EntitlementDays] IS NULL OR [EntitlementDays] >= 0");
+
+                            t.HasCheckConstraint("CK_LeavePolicies_HalfDay", "[HalfDayDeduction] IS NULL OR\r\n([HalfDayDeduction] >= 0 AND [HalfDayDeduction] <= 1)");
+
+                            t.HasCheckConstraint("CK_LeavePolicies_Warning", "[WarningThresholdDays] IS NULL OR [WarningThresholdDays] >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Leaves.LeaveRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("DecidedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("DecidedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("DecisionReason")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateOnly>("EndsOn")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("LeaveTypeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ParticipationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateOnly>("StartsOn")
+                        .HasColumnType("date");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("SubmittedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DecidedById");
+
+                    b.HasIndex("LeaveTypeId");
+
+                    b.HasIndex("ParticipationId", "StartsOn", "EndsOn");
+
+                    b.ToTable("LeaveRequests", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_LeaveRequests_Dates", "[EndsOn] >= [StartsOn]");
+
+                            t.HasCheckConstraint("CK_LeaveRequests_Status", "[Status] IN (0, 1, 2, 3)");
+                        });
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Leaves.LeaveRequestAction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("LeaveRequestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("NewValues")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("PerformedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("PreviousValues")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LeaveRequestId");
+
+                    b.HasIndex("PerformedById");
+
+                    b.ToTable("LeaveRequestActions");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Leaves.LeaveRequestSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal?>("DeductionDays")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("decimal(9,2)");
+
+                    b.Property<int>("LeaveMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("LeavePolicyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("LeaveRequestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("WorkSessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LeavePolicyId");
+
+                    b.HasIndex("WorkSessionId");
+
+                    b.HasIndex("LeaveRequestId", "WorkSessionId")
+                        .IsUnique();
+
+                    b.ToTable("LeaveRequestSessions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_LeaveRequestSessions_Deduction", "[DeductionDays] IS NULL OR [DeductionDays] >= 0");
+
+                            t.HasCheckConstraint("CK_LeaveRequestSessions_Minutes", "[LeaveMinutes] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Leaves.LeaveType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("RequiresDocument")
+                        .HasColumnType("bit");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("LeaveTypes");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Organization.AuthorityAssignment", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
@@ -224,7 +897,7 @@ namespace Iskur.Api.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Iskur.Api.Entities.Department", b =>
+            modelBuilder.Entity("Iskur.Api.Entities.Organization.Department", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
@@ -260,7 +933,7 @@ namespace Iskur.Api.Migrations
                     b.ToTable("Departments");
                 });
 
-            modelBuilder.Entity("Iskur.Api.Entities.Faculty", b =>
+            modelBuilder.Entity("Iskur.Api.Entities.Organization.Faculty", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
@@ -293,7 +966,650 @@ namespace Iskur.Api.Migrations
                     b.ToTable("Faculties");
                 });
 
-            modelBuilder.Entity("Iskur.Api.Entities.ProgramParticipation", b =>
+            modelBuilder.Entity("Iskur.Api.Entities.Organization.WorkUnit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("DepartmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DepartmentId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("WorkUnits");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.QrScan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("ParticipationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("QrSessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateTimeOffset>("ScannedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("TokenDigest")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParticipationId");
+
+                    b.HasIndex("QrSessionId", "ParticipationId")
+                        .IsUnique();
+
+                    b.ToTable("QrScans");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.QrSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("CancelledAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("EndsAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateTimeOffset>("ScanDeadline")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("SessionType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("StartsAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("WorkUnitId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("WorkUnitId", "StartsAt", "SessionType")
+                        .IsUnique();
+
+                    b.ToTable("QrSessions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_QrSessions_Deadline", "[ScanDeadline] > [StartsAt] AND [ScanDeadline] <= [EndsAt]");
+
+                            t.HasCheckConstraint("CK_QrSessions_Times", "[EndsAt] > [StartsAt]");
+
+                            t.HasCheckConstraint("CK_QrSessions_Type", "[SessionType] IN (0, 1)");
+                        });
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.ReportAction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AbsenceReportId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<Guid>("PerformedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AbsenceReportId");
+
+                    b.HasIndex("PerformedById");
+
+                    b.ToTable("ReportActions");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Scheduling.AcademicTerm", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateOnly>("EndsOn")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateOnly>("StartsOn")
+                        .HasColumnType("date");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AcademicTerms", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_AcademicTerms_Dates", "[EndsOn] > [StartsOn]");
+                        });
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Scheduling.CalendarHoliday", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("EndsAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateTimeOffset>("StartsAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CalendarHolidays", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_CalendarHolidays_Dates", "[EndsAt] > [StartsAt]");
+                        });
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Scheduling.CourseMeeting", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CourseName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("CourseScheduleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<TimeOnly>("EndsAt")
+                        .HasColumnType("time");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<TimeOnly>("StartsAt")
+                        .HasColumnType("time");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Weekday")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseScheduleId");
+
+                    b.ToTable("CourseMeetings", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_CourseMeetings_Times", "[EndsAt] > [StartsAt]");
+
+                            t.HasCheckConstraint("CK_CourseMeetings_Weekday", "[Weekday] BETWEEN 0 AND 6");
+                        });
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Scheduling.CourseSchedule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademicTermId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("ConfirmedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<Guid?>("SourceFileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateOnly>("ValidFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("ValidUntil")
+                        .HasColumnType("date");
+
+                    b.Property<int>("VersionNumber")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicTermId");
+
+                    b.HasIndex("SourceFileId");
+
+                    b.HasIndex("StudentId", "AcademicTermId", "VersionNumber")
+                        .IsUnique();
+
+                    b.ToTable("CourseSchedules", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_CourseSchedules_Dates", "[ValidUntil] IS NULL OR [ValidUntil] > [ValidFrom]");
+
+                            t.HasCheckConstraint("CK_CourseSchedules_Status", "[Status] IN (0, 1)");
+
+                            t.HasCheckConstraint("CK_CourseSchedules_Version", "[VersionNumber] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Scheduling.PlanApplicationWindow", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("ClosesAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Month")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("OpensAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("ProgramPeriodId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProgramPeriodId", "Year", "Month")
+                        .IsUnique();
+
+                    b.ToTable("PlanApplicationWindows", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_PlanApplicationWindows_Dates", "[ClosesAt] > [OpensAt]");
+
+                            t.HasCheckConstraint("CK_PlanApplicationWindows_Month", "[Month] BETWEEN 1 AND 12");
+
+                            t.HasCheckConstraint("CK_PlanApplicationWindows_Year", "[Year] BETWEEN 1900 AND 2200");
+                        });
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Scheduling.WorkRule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<TimeOnly>("AfternoonEndsAt")
+                        .HasColumnType("time");
+
+                    b.Property<TimeOnly>("AfternoonStartsAt")
+                        .HasColumnType("time");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal?>("HalfDayWeeklyWeight")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("decimal(9,2)");
+
+                    b.Property<TimeOnly>("MorningEndsAt")
+                        .HasColumnType("time");
+
+                    b.Property<TimeOnly>("MorningStartsAt")
+                        .HasColumnType("time");
+
+                    b.Property<Guid>("ProgramPeriodId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("QrRefreshSeconds")
+                        .HasColumnType("int");
+
+                    b.Property<int>("QrWindowMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateOnly>("ValidFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("ValidUntil")
+                        .HasColumnType("date");
+
+                    b.Property<bool?>("WeekendWorkAllowed")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("WeeklyMaximum")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("decimal(9,2)");
+
+                    b.Property<decimal>("WeeklyMinimum")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("decimal(9,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProgramPeriodId");
+
+                    b.ToTable("WorkRules", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_WorkRules_Dates", "[ValidUntil] IS NULL OR [ValidUntil] > [ValidFrom]");
+
+                            t.HasCheckConstraint("CK_WorkRules_HalfDayWeight", "[HalfDayWeeklyWeight] IS NULL\r\nOR ([HalfDayWeeklyWeight] > 0\r\n    AND [HalfDayWeeklyWeight] <= 1)");
+
+                            t.HasCheckConstraint("CK_WorkRules_QrTimes", "[QrWindowMinutes] > 0 AND [QrRefreshSeconds] > 0");
+
+                            t.HasCheckConstraint("CK_WorkRules_Times", "[MorningStartsAt] < [MorningEndsAt]\r\nAND [MorningEndsAt] <= [AfternoonStartsAt]\r\nAND [AfternoonStartsAt] < [AfternoonEndsAt]");
+
+                            t.HasCheckConstraint("CK_WorkRules_WeeklyLimits", "[WeeklyMinimum] >= 0 AND [WeeklyMaximum] >= [WeeklyMinimum]");
+                        });
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.SessionAttendance", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AcceptedMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("LeaveRequestSessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("QrScanId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<int>("Source")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("WorkSessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LeaveRequestSessionId");
+
+                    b.HasIndex("QrScanId");
+
+                    b.HasIndex("WorkSessionId")
+                        .IsUnique();
+
+                    b.ToTable("SessionAttendances", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_SessionAttendances_Minutes", "[AcceptedMinutes] >= 0");
+
+                            t.HasCheckConstraint("CK_SessionAttendances_SingleSource", "NOT ([QrScanId] IS NOT NULL AND [LeaveRequestSessionId] IS NOT NULL)");
+
+                            t.HasCheckConstraint("CK_SessionAttendances_Source", "[Source] IN (0, 1, 2, 3, 4)");
+
+                            t.HasCheckConstraint("CK_SessionAttendances_Status", "[Status] IN (0, 1, 2, 3)");
+                        });
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.StudentTask", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("AssignedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("AssignedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<DateTimeOffset?>("DueAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("ParticipationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssignedById");
+
+                    b.HasIndex("ParticipationId");
+
+                    b.ToTable("StudentTasks", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_StudentTasks_Status", "[Status] IN (0, 1)");
+                        });
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Students.AdvisorAssignment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AdvisorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AssignedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateOnly?>("EndsOn")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("ParticipationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateOnly>("StartsOn")
+                        .HasColumnType("date");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdvisorId");
+
+                    b.HasIndex("AssignedById");
+
+                    b.HasIndex("ParticipationId")
+                        .IsUnique()
+                        .HasFilter("[EndsOn] IS NULL");
+
+                    b.HasIndex("ParticipationId", "StartsOn", "EndsOn");
+
+                    b.ToTable("AdvisorAssignments", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_AdvisorAssignments_Dates", "[EndsOn] IS NULL OR [EndsOn] > [StartsOn]");
+                        });
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Students.ProgramParticipation", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
@@ -344,7 +1660,7 @@ namespace Iskur.Api.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Iskur.Api.Entities.ProgramPeriod", b =>
+            modelBuilder.Entity("Iskur.Api.Entities.Students.ProgramPeriod", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
@@ -391,7 +1707,7 @@ namespace Iskur.Api.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Iskur.Api.Entities.StudentProfile", b =>
+            modelBuilder.Entity("Iskur.Api.Entities.Students.StudentProfile", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
@@ -453,7 +1769,7 @@ namespace Iskur.Api.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Iskur.Api.Entities.UnitAssignment", b =>
+            modelBuilder.Entity("Iskur.Api.Entities.Students.UnitAssignment", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
@@ -507,7 +1823,7 @@ namespace Iskur.Api.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Iskur.Api.Entities.WorkUnit", b =>
+            modelBuilder.Entity("Iskur.Api.Entities.TaskAction", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
@@ -515,16 +1831,114 @@ namespace Iskur.Api.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<Guid>("DepartmentId")
+                    b.Property<string>("NewValues")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("PerformedById")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                    b.Property<string>("PreviousValues")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("Reason")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<Guid>("StudentTaskId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PerformedById");
+
+                    b.HasIndex("StudentTaskId");
+
+                    b.ToTable("TaskActions");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.WorkPlans.MonthlyWorkPlan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Month")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ParticipationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("SubmittedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParticipationId", "Year", "Month")
+                        .IsUnique();
+
+                    b.ToTable("MonthlyWorkPlans", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_MonthlyWorkPlans_Month", "[Month] BETWEEN 1 AND 12");
+
+                            t.HasCheckConstraint("CK_MonthlyWorkPlans_Status", "[Status] IN (0, 1)");
+
+                            t.HasCheckConstraint("CK_MonthlyWorkPlans_Year", "[Year] BETWEEN 1900 AND 2200");
+                        });
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.WorkPlans.PlanDayAction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("NewValues")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("PerformedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("PreviousValues")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -535,12 +1949,163 @@ namespace Iskur.Api.Migrations
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<int>("VersionNumber")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("WorkPlanDayId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("DepartmentId", "Name")
+                    b.HasIndex("PerformedById");
+
+                    b.HasIndex("WorkPlanDayId");
+
+                    b.ToTable("PlanDayActions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_PlanDayActions_Version", "[VersionNumber] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.WorkPlans.WorkPlanDay", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("DecidedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("DecidedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Decision")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DecisionReason")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Explanation")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<Guid>("MonthlyWorkPlanId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("VersionNumber")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly>("WorkDate")
+                        .HasColumnType("date");
+
+                    b.Property<int>("WorkType")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DecidedById");
+
+                    b.HasIndex("WorkDate");
+
+                    b.HasIndex("MonthlyWorkPlanId", "WorkDate")
                         .IsUnique();
 
-                    b.ToTable("WorkUnits");
+                    b.ToTable("WorkPlanDays", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_WorkPlanDays_Decision", "[Decision] IN (0, 1, 2, 3)");
+
+                            t.HasCheckConstraint("CK_WorkPlanDays_Version", "[VersionNumber] > 0");
+
+                            t.HasCheckConstraint("CK_WorkPlanDays_WorkType", "[WorkType] IN (0, 1, 2)");
+                        });
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.WorkPlans.WorkSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AdvisorAssignmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ConflictDetails")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<Guid?>("CourseScheduleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("EndsAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("HasCourseConflict")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("PlannedMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<int>("SessionType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("StartsAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("UnitAssignmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("WorkPlanDayId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("WorkRuleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdvisorAssignmentId");
+
+                    b.HasIndex("CourseScheduleId");
+
+                    b.HasIndex("StartsAt");
+
+                    b.HasIndex("UnitAssignmentId");
+
+                    b.HasIndex("WorkRuleId");
+
+                    b.HasIndex("WorkPlanDayId", "SessionType")
+                        .IsUnique();
+
+                    b.ToTable("WorkSessions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_WorkSessions_Minutes", "[PlannedMinutes] > 0");
+
+                            t.HasCheckConstraint("CK_WorkSessions_Times", "[EndsAt] > [StartsAt]");
+
+                            t.HasCheckConstraint("CK_WorkSessions_Type", "[SessionType] IN (0, 1)");
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
@@ -674,47 +2239,254 @@ namespace Iskur.Api.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Iskur.Api.Entities.AdvisorAssignment", b =>
+            modelBuilder.Entity("Iskur.Api.Entities.AbsenceReport", b =>
                 {
-                    b.HasOne("Iskur.Api.Entities.ApplicationUser", "Advisor")
+                    b.HasOne("Iskur.Api.Entities.Students.ProgramParticipation", null)
                         .WithMany()
-                        .HasForeignKey("AdvisorId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("Iskur.Api.Entities.ApplicationUser", "AssignedBy")
-                        .WithMany()
-                        .HasForeignKey("AssignedById")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("Iskur.Api.Entities.ProgramParticipation", "Participation")
-                        .WithMany("AdvisorAssignments")
                         .HasForeignKey("ParticipationId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("Advisor");
-
-                    b.Navigation("AssignedBy");
-
-                    b.Navigation("Participation");
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("ReportedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
                 });
 
-            modelBuilder.Entity("Iskur.Api.Entities.AuthorityAssignment", b =>
+            modelBuilder.Entity("Iskur.Api.Entities.AbsenceReportSession", b =>
                 {
-                    b.HasOne("Iskur.Api.Entities.ApplicationUser", "AssignedBy")
+                    b.HasOne("Iskur.Api.Entities.AbsenceReport", null)
+                        .WithMany()
+                        .HasForeignKey("AbsenceReportId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Iskur.Api.Entities.WorkPlans.WorkSession", null)
+                        .WithMany()
+                        .HasForeignKey("WorkSessionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.AdministrativeDecision", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("DecidedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Iskur.Api.Entities.Students.ProgramParticipation", null)
+                        .WithMany()
+                        .HasForeignKey("ParticipationId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Iskur.Api.Entities.AdministrativeDecision", null)
+                        .WithMany()
+                        .HasForeignKey("PreviousDecisionId")
+                        .OnDelete(DeleteBehavior.NoAction);
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.AttendanceCorrection", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("PerformedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Iskur.Api.Entities.SessionAttendance", null)
+                        .WithMany()
+                        .HasForeignKey("SessionAttendanceId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.AuditEntry", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction);
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.DecisionDocument", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.AdministrativeDecision", null)
+                        .WithMany()
+                        .HasForeignKey("AdministrativeDecisionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Iskur.Api.Entities.Documents.StoredFile", null)
+                        .WithMany()
+                        .HasForeignKey("StoredFileId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Documents.StoredFile", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", "UploadedBy")
+                        .WithMany()
+                        .HasForeignKey("UploadedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("UploadedBy");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.EvaluationNote", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Iskur.Api.Entities.Students.ProgramParticipation", null)
+                        .WithMany()
+                        .HasForeignKey("ParticipationId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Iskur.Api.Entities.EvaluationNote", null)
+                        .WithMany()
+                        .HasForeignKey("PreviousNoteId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Iskur.Api.Entities.StudentTask", null)
+                        .WithMany()
+                        .HasForeignKey("StudentTaskId")
+                        .OnDelete(DeleteBehavior.NoAction);
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.LeaveDocument", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Leaves.LeaveRequest", null)
+                        .WithMany()
+                        .HasForeignKey("LeaveRequestId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Iskur.Api.Entities.Documents.StoredFile", null)
+                        .WithMany()
+                        .HasForeignKey("StoredFileId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Leaves.LeaveMovement", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Leaves.LeavePolicy", null)
+                        .WithMany()
+                        .HasForeignKey("LeavePolicyId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Iskur.Api.Entities.Leaves.LeaveRequest", null)
+                        .WithMany()
+                        .HasForeignKey("LeaveRequestId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Iskur.Api.Entities.Students.ProgramParticipation", null)
+                        .WithMany()
+                        .HasForeignKey("ParticipationId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("PerformedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Leaves.LeavePolicy", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Leaves.LeaveType", null)
+                        .WithMany()
+                        .HasForeignKey("LeaveTypeId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Iskur.Api.Entities.Students.ProgramPeriod", null)
+                        .WithMany()
+                        .HasForeignKey("ProgramPeriodId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Leaves.LeaveRequest", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("DecidedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Iskur.Api.Entities.Leaves.LeaveType", null)
+                        .WithMany()
+                        .HasForeignKey("LeaveTypeId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Iskur.Api.Entities.Students.ProgramParticipation", null)
+                        .WithMany()
+                        .HasForeignKey("ParticipationId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Leaves.LeaveRequestAction", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Leaves.LeaveRequest", null)
+                        .WithMany()
+                        .HasForeignKey("LeaveRequestId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("PerformedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Leaves.LeaveRequestSession", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Leaves.LeavePolicy", null)
+                        .WithMany()
+                        .HasForeignKey("LeavePolicyId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Iskur.Api.Entities.Leaves.LeaveRequest", null)
+                        .WithMany()
+                        .HasForeignKey("LeaveRequestId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Iskur.Api.Entities.WorkPlans.WorkSession", null)
+                        .WithMany()
+                        .HasForeignKey("WorkSessionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Organization.AuthorityAssignment", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", "AssignedBy")
                         .WithMany()
                         .HasForeignKey("AssignedById")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Iskur.Api.Entities.Department", "Department")
+                    b.HasOne("Iskur.Api.Entities.Organization.Department", "Department")
                         .WithMany()
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.NoAction);
 
-                    b.HasOne("Iskur.Api.Entities.Faculty", "Faculty")
+                    b.HasOne("Iskur.Api.Entities.Organization.Faculty", "Faculty")
                         .WithMany()
                         .HasForeignKey("FacultyId")
                         .OnDelete(DeleteBehavior.NoAction);
@@ -725,7 +2497,7 @@ namespace Iskur.Api.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Iskur.Api.Entities.ApplicationUser", "User")
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -742,9 +2514,9 @@ namespace Iskur.Api.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Iskur.Api.Entities.Department", b =>
+            modelBuilder.Entity("Iskur.Api.Entities.Organization.Department", b =>
                 {
-                    b.HasOne("Iskur.Api.Entities.Faculty", "Faculty")
+                    b.HasOne("Iskur.Api.Entities.Organization.Faculty", "Faculty")
                         .WithMany("Departments")
                         .HasForeignKey("FacultyId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -753,15 +2525,191 @@ namespace Iskur.Api.Migrations
                     b.Navigation("Faculty");
                 });
 
-            modelBuilder.Entity("Iskur.Api.Entities.ProgramParticipation", b =>
+            modelBuilder.Entity("Iskur.Api.Entities.Organization.WorkUnit", b =>
                 {
-                    b.HasOne("Iskur.Api.Entities.ProgramPeriod", "ProgramPeriod")
+                    b.HasOne("Iskur.Api.Entities.Organization.Department", "Department")
+                        .WithMany("WorkUnits")
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Department");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.QrScan", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Students.ProgramParticipation", null)
+                        .WithMany()
+                        .HasForeignKey("ParticipationId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Iskur.Api.Entities.QrSession", null)
+                        .WithMany()
+                        .HasForeignKey("QrSessionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.QrSession", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Iskur.Api.Entities.Organization.WorkUnit", null)
+                        .WithMany()
+                        .HasForeignKey("WorkUnitId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.ReportAction", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.AbsenceReport", null)
+                        .WithMany()
+                        .HasForeignKey("AbsenceReportId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("PerformedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Scheduling.CourseMeeting", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Scheduling.CourseSchedule", "CourseSchedule")
+                        .WithMany("CourseMeetings")
+                        .HasForeignKey("CourseScheduleId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("CourseSchedule");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Scheduling.CourseSchedule", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Scheduling.AcademicTerm", "AcademicTerm")
+                        .WithMany("CourseSchedules")
+                        .HasForeignKey("AcademicTermId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Iskur.Api.Entities.Documents.StoredFile", "SourceFile")
+                        .WithMany()
+                        .HasForeignKey("SourceFileId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Iskur.Api.Entities.Students.StudentProfile", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("AcademicTerm");
+
+                    b.Navigation("SourceFile");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Scheduling.PlanApplicationWindow", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Students.ProgramPeriod", "ProgramPeriod")
+                        .WithMany()
+                        .HasForeignKey("ProgramPeriodId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("ProgramPeriod");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Scheduling.WorkRule", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Students.ProgramPeriod", "ProgramPeriod")
+                        .WithMany()
+                        .HasForeignKey("ProgramPeriodId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("ProgramPeriod");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.SessionAttendance", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Leaves.LeaveRequestSession", null)
+                        .WithMany()
+                        .HasForeignKey("LeaveRequestSessionId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Iskur.Api.Entities.QrScan", null)
+                        .WithMany()
+                        .HasForeignKey("QrScanId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Iskur.Api.Entities.WorkPlans.WorkSession", null)
+                        .WithMany()
+                        .HasForeignKey("WorkSessionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.StudentTask", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("AssignedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Iskur.Api.Entities.Students.ProgramParticipation", null)
+                        .WithMany()
+                        .HasForeignKey("ParticipationId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Students.AdvisorAssignment", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", "Advisor")
+                        .WithMany()
+                        .HasForeignKey("AdvisorId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", "AssignedBy")
+                        .WithMany()
+                        .HasForeignKey("AssignedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Iskur.Api.Entities.Students.ProgramParticipation", "Participation")
+                        .WithMany("AdvisorAssignments")
+                        .HasForeignKey("ParticipationId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Advisor");
+
+                    b.Navigation("AssignedBy");
+
+                    b.Navigation("Participation");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Students.ProgramParticipation", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Students.ProgramPeriod", "ProgramPeriod")
                         .WithMany("Participations")
                         .HasForeignKey("ProgramPeriodId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Iskur.Api.Entities.StudentProfile", "Student")
+                    b.HasOne("Iskur.Api.Entities.Students.StudentProfile", "Student")
                         .WithMany("Participations")
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -772,17 +2720,17 @@ namespace Iskur.Api.Migrations
                     b.Navigation("Student");
                 });
 
-            modelBuilder.Entity("Iskur.Api.Entities.StudentProfile", b =>
+            modelBuilder.Entity("Iskur.Api.Entities.Students.StudentProfile", b =>
                 {
-                    b.HasOne("Iskur.Api.Entities.Department", "EducationDepartment")
+                    b.HasOne("Iskur.Api.Entities.Organization.Department", "EducationDepartment")
                         .WithMany()
                         .HasForeignKey("EducationDepartmentId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Iskur.Api.Entities.ApplicationUser", "User")
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", "User")
                         .WithOne()
-                        .HasForeignKey("Iskur.Api.Entities.StudentProfile", "UserId")
+                        .HasForeignKey("Iskur.Api.Entities.Students.StudentProfile", "UserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
@@ -791,21 +2739,21 @@ namespace Iskur.Api.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Iskur.Api.Entities.UnitAssignment", b =>
+            modelBuilder.Entity("Iskur.Api.Entities.Students.UnitAssignment", b =>
                 {
-                    b.HasOne("Iskur.Api.Entities.ApplicationUser", "AssignedBy")
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", "AssignedBy")
                         .WithMany()
                         .HasForeignKey("AssignedById")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Iskur.Api.Entities.ProgramParticipation", "Participation")
+                    b.HasOne("Iskur.Api.Entities.Students.ProgramParticipation", "Participation")
                         .WithMany("UnitAssignments")
                         .HasForeignKey("ParticipationId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Iskur.Api.Entities.WorkUnit", "WorkUnit")
+                    b.HasOne("Iskur.Api.Entities.Organization.WorkUnit", "WorkUnit")
                         .WithMany()
                         .HasForeignKey("WorkUnitId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -818,15 +2766,109 @@ namespace Iskur.Api.Migrations
                     b.Navigation("WorkUnit");
                 });
 
-            modelBuilder.Entity("Iskur.Api.Entities.WorkUnit", b =>
+            modelBuilder.Entity("Iskur.Api.Entities.TaskAction", b =>
                 {
-                    b.HasOne("Iskur.Api.Entities.Department", "Department")
-                        .WithMany("WorkUnits")
-                        .HasForeignKey("DepartmentId")
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("PerformedById")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("Department");
+                    b.HasOne("Iskur.Api.Entities.StudentTask", null)
+                        .WithMany()
+                        .HasForeignKey("StudentTaskId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.WorkPlans.MonthlyWorkPlan", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Students.ProgramParticipation", "Participation")
+                        .WithMany()
+                        .HasForeignKey("ParticipationId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Participation");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.WorkPlans.PlanDayAction", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", "PerformedBy")
+                        .WithMany()
+                        .HasForeignKey("PerformedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Iskur.Api.Entities.WorkPlans.WorkPlanDay", "WorkPlanDay")
+                        .WithMany("Actions")
+                        .HasForeignKey("WorkPlanDayId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("PerformedBy");
+
+                    b.Navigation("WorkPlanDay");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.WorkPlans.WorkPlanDay", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", "DecidedBy")
+                        .WithMany()
+                        .HasForeignKey("DecidedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Iskur.Api.Entities.WorkPlans.MonthlyWorkPlan", "MonthlyWorkPlan")
+                        .WithMany("Days")
+                        .HasForeignKey("MonthlyWorkPlanId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("DecidedBy");
+
+                    b.Navigation("MonthlyWorkPlan");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.WorkPlans.WorkSession", b =>
+                {
+                    b.HasOne("Iskur.Api.Entities.Students.AdvisorAssignment", "AdvisorAssignment")
+                        .WithMany()
+                        .HasForeignKey("AdvisorAssignmentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Iskur.Api.Entities.Scheduling.CourseSchedule", "CourseSchedule")
+                        .WithMany()
+                        .HasForeignKey("CourseScheduleId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Iskur.Api.Entities.Students.UnitAssignment", "UnitAssignment")
+                        .WithMany()
+                        .HasForeignKey("UnitAssignmentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Iskur.Api.Entities.WorkPlans.WorkPlanDay", "WorkPlanDay")
+                        .WithMany("Sessions")
+                        .HasForeignKey("WorkPlanDayId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Iskur.Api.Entities.Scheduling.WorkRule", "WorkRule")
+                        .WithMany()
+                        .HasForeignKey("WorkRuleId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("AdvisorAssignment");
+
+                    b.Navigation("CourseSchedule");
+
+                    b.Navigation("UnitAssignment");
+
+                    b.Navigation("WorkPlanDay");
+
+                    b.Navigation("WorkRule");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -840,7 +2882,7 @@ namespace Iskur.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
-                    b.HasOne("Iskur.Api.Entities.ApplicationUser", null)
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -849,7 +2891,7 @@ namespace Iskur.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
-                    b.HasOne("Iskur.Api.Entities.ApplicationUser", null)
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -864,7 +2906,7 @@ namespace Iskur.Api.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Iskur.Api.Entities.ApplicationUser", null)
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -873,38 +2915,60 @@ namespace Iskur.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
-                    b.HasOne("Iskur.Api.Entities.ApplicationUser", null)
+                    b.HasOne("Iskur.Api.Entities.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Iskur.Api.Entities.Department", b =>
+            modelBuilder.Entity("Iskur.Api.Entities.Organization.Department", b =>
                 {
                     b.Navigation("WorkUnits");
                 });
 
-            modelBuilder.Entity("Iskur.Api.Entities.Faculty", b =>
+            modelBuilder.Entity("Iskur.Api.Entities.Organization.Faculty", b =>
                 {
                     b.Navigation("Departments");
                 });
 
-            modelBuilder.Entity("Iskur.Api.Entities.ProgramParticipation", b =>
+            modelBuilder.Entity("Iskur.Api.Entities.Scheduling.AcademicTerm", b =>
+                {
+                    b.Navigation("CourseSchedules");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Scheduling.CourseSchedule", b =>
+                {
+                    b.Navigation("CourseMeetings");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.Students.ProgramParticipation", b =>
                 {
                     b.Navigation("AdvisorAssignments");
 
                     b.Navigation("UnitAssignments");
                 });
 
-            modelBuilder.Entity("Iskur.Api.Entities.ProgramPeriod", b =>
+            modelBuilder.Entity("Iskur.Api.Entities.Students.ProgramPeriod", b =>
                 {
                     b.Navigation("Participations");
                 });
 
-            modelBuilder.Entity("Iskur.Api.Entities.StudentProfile", b =>
+            modelBuilder.Entity("Iskur.Api.Entities.Students.StudentProfile", b =>
                 {
                     b.Navigation("Participations");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.WorkPlans.MonthlyWorkPlan", b =>
+                {
+                    b.Navigation("Days");
+                });
+
+            modelBuilder.Entity("Iskur.Api.Entities.WorkPlans.WorkPlanDay", b =>
+                {
+                    b.Navigation("Actions");
+
+                    b.Navigation("Sessions");
                 });
 #pragma warning restore 612, 618
         }
