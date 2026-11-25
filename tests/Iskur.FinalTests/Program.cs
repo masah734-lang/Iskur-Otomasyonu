@@ -156,7 +156,7 @@ var november = await Read(thirdStudent, novemberPath);
 var draftNovember = await Json(await Status(
     thirdStudent.PostAsJsonAsync(novemberPath + "/withdraw", november.GetProperty("version").GetString()), HttpStatusCode.OK));
 var novemberDays = new[] { "2026-11-03", "2026-11-10", "2026-11-17", "2026-11-24" }
-    .Select(date => new { date, kind = "Morning" }).ToArray();
+    .Select(date => new { date, kind = "Morning", note = (string?)null }).ToArray();
 var submittedNovember = await Json(await Status(thirdStudent.PutAsJsonAsync(novemberPath, new
 {
     submit = true,
@@ -185,7 +185,7 @@ await Status(thirdStudent.PutAsJsonAsync(novemberPath, new
 {
     submit = true,
     version = reopenedNovember.GetProperty("version").GetString(),
-    days = novemberDays.Append(new { date = "2026-11-30", kind = "Afternoon" }).ToArray()
+    days = novemberDays.Append(new { date = "2026-11-30", kind = "Morning", note = (string?)"Öğrencinin ders çakışması açıklaması." }).ToArray()
 }), HttpStatusCode.OK);
 var decemberVersion = reopenedDecember.GetProperty("version").GetString();
 var overLimit = await Json(await Status(thirdStudent.PutAsJsonAsync(decemberPath, new
@@ -203,6 +203,31 @@ await Status(thirdStudent.PutAsJsonAsync(decemberPath, new
     days = remainingWeeks.Select(date => new { date, kind = "Morning" }).ToArray()
 }), HttpStatusCode.OK);
 Console.WriteLine("PASS: Ortak haftada Kasım veya Aralık seçilebiliyor, eksik hafta ve üç gün sınırı doğrulandı");
+
+using var thirdAdvisor = await Login("diger.danisman");
+var reviewPlan = await Read(thirdAdvisor, novemberPath);
+var overlapping = reviewPlan.GetProperty("days").EnumerateArray()
+    .Single(row => row.GetProperty("date").GetString() == "2026-11-30");
+Assert(overlapping.GetProperty("conflict").GetBoolean(), "Danışman ders çakışmasını görüyor");
+var decisionPath = $"/api/plan-days/{overlapping.GetProperty("id").GetInt32()}/decision";
+await Status(thirdAdvisor.PutAsJsonAsync(decisionPath,
+    new { decision = "Rejected", reason = " ", version = reviewPlan.GetProperty("version").GetString() }),
+    HttpStatusCode.BadRequest);
+await Status(thirdAdvisor.PutAsJsonAsync(decisionPath,
+    new { decision = "Rejected", reason = "Ders saatinde görev planlanmış.", version = reviewPlan.GetProperty("version").GetString() }),
+    HttpStatusCode.OK);
+var rejected = await Read(thirdAdvisor, novemberPath);
+var rejectedDay = rejected.GetProperty("days").EnumerateArray()
+    .Single(row => row.GetProperty("date").GetString() == "2026-11-30");
+Assert(rejectedDay.GetProperty("reason").GetString() == "Ders saatinde görev planlanmış.", "Ret gerekçesi saklanıyor");
+await Status(thirdAdvisor.PutAsJsonAsync(decisionPath,
+    new { decision = "Accepted", version = rejected.GetProperty("version").GetString() }), HttpStatusCode.OK);
+var accepted = await Read(thirdAdvisor, novemberPath);
+Assert(accepted.GetProperty("days").EnumerateArray()
+    .Single(row => row.GetProperty("date").GetString() == "2026-11-30").GetProperty("decision").GetString() == "Accepted",
+    "Ders çakışması görünen gün gerekçesiz kabul edilebiliyor");
+Console.WriteLine("PASS: Gerekçe yalnız ret için gerekiyor ve kabul tek istekle kaydediliyor");
+
 
 var december = $"/api/students/{first}/plans/2026/12";
 await Status(student.PutAsJsonAsync(december, new { submit = true,

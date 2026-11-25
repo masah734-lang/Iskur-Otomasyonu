@@ -11,7 +11,7 @@ Temel URL `http://127.0.0.1:5225/api`. `POST /auth/login` isteği e-posta ve par
 | Ders programı ve tatil | `GET/PUT /students/{id}/courses`, `GET/PUT /holidays` |
 | Aylık plan | `GET/PUT /students/{id}/plans/{year}/{month}` |
 | Plan geri çekme ve geçmiş | `POST .../withdraw`, `GET .../history` |
-| Gün kararı | `PUT /plan-days/{dayId}/decision` |
+| Gün kararı | `PUT /plan-days/{dayId}/decision`. Ret kararında gerekçe zorunludur. |
 | İzin talebi ve bakiye | `GET/POST /students/{id}/leaves` |
 | İzin kararı ve belge | `POST /students/{id}/leaves/{requestId}/decision`, `GET .../attachment` |
 | QR üretimi | `GET /attendance/qr?unitId={id}` |

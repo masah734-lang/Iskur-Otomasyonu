@@ -228,8 +228,8 @@ public partial class ApiController
         if (plan.Status != "Submitted" || input.Decision is not ("Accepted" or "Rejected"))
             return Invalid("Gönderilmiş plan ve geçerli karar gerekli.");
         if (Convert.ToBase64String(plan.Version) != input.Version) return Changed("Plan değişti. Yeniden yükleyin.");
-        if ((input.Decision == "Rejected" || day.Conflict) && string.IsNullOrWhiteSpace(input.Reason))
-            return Invalid("Ret veya ders çakışmasına rağmen kabul için gerekçe gerekli.");
+        if (input.Decision == "Rejected" && string.IsNullOrWhiteSpace(input.Reason))
+            return Invalid("Reddetmek için bir gerekçe girin.");
         if (await HasRecordedActivity([dayId]))
             return Changed("Yoklama veya izin kaydı bulunan çalışma günü değiştirilemez.");
         if (input.Decision == "Accepted")
