@@ -1,0 +1,44 @@
+erDiagram
+ Faculty ||--o{ Department : contains
+ Faculty ||--o{ WorkUnit : contains
+ Department o|--o{ WorkUnit : associated
+ User ||--o| StudentProfile : owns
+ Department ||--o{ StudentProfile : studies
+ StudentProfile ||--o{ Participation : joins
+ ProgramPeriod ||--o{ Participation : defines
+ Participation ||--o{ Assignment : history
+ WorkUnit ||--o{ Assignment : assigned
+ User o|--o{ Assignment : advises
+ Participation ||--o{ MonthlyPlan : creates
+ MonthlyPlan ||--o{ PlanDay : dates
+ Participation ||--o{ Course : schedule
+ User o|--o{ PlanDay : decides
+ Holiday {
+  date Date PK
+  string Name
+  bool AfternoonOnly
+ }
+ MonthlyPlan {
+  int Id PK
+  int ParticipationId FK
+  int Year
+  int Month
+  string Status
+  bytes Version
+ }
+ PlanDay {
+  int Id PK
+  int MonthlyPlanId FK
+  date Date
+  string Kind
+  int Minutes
+  string Decision
+ }
+ Assignment {
+  int Id PK
+  int ParticipationId FK
+  int WorkUnitId FK
+  string AdvisorId FK
+  datetime Start
+  datetime End
+ }
