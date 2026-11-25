@@ -480,3 +480,13 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# İŞKUR uygulamasının yerel dosyaları
+node_modules/
+dist/
+appsettings.Local.json
+.iskur-kurulum-tamam
+*.bak
+.env
+.env.*
+!.env.example
