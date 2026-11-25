@@ -148,7 +148,16 @@ var csv = await Status(management.GetAsync(reports + "&csv=true"), HttpStatusCod
 Assert((await csv.Content.ReadAsStringAsync()).Contains("Gerçekleşen dakika"), "CSV");
 var headCsv = await Status(head.GetAsync(reports + "&csv=true"), HttpStatusCode.OK);
 Assert(!(await headCsv.Content.ReadAsStringAsync()).Contains("IBAN"), "Bölüm başkanı CSV alan sınırı");
-Console.WriteLine("PASS: Aylık rapor toplamları ve role göre CSV");
+var facultyWork = await Read(management, "/api/reports/work?year=2026&month=11");
+Assert(facultyWork.GetArrayLength() == 2, "Fakülte filtresiz çalışma raporu iki öğrenciyi içeriyor");
+var facultyTasks = await Read(management, "/api/reports/tasks?year=2026&month=11");
+Assert(facultyTasks.GetArrayLength() == 1, "Fakülte görev bölümü yükleniyor");
+var facultyWarnings = await Read(management, "/api/reports/warnings");
+Assert(facultyWarnings.EnumerateArray().Any(row => row.GetProperty("id").GetInt32() == second),
+    "Fakülte devamsızlık uyarıları yükleniyor");
+var emptyMonth = await Read(management, "/api/reports/work?year=2025&month=11");
+Assert(emptyMonth.GetArrayLength() == 0, "Onaylı gün bulunmayan ay boş sonuç veriyor");
+Console.WriteLine("PASS: Aylık rapor, CSV, görevler, uyarılar ve boş ay");
 
 using var thirdStudent = await Login("ogrenci3");
 var novemberPath = $"/api/students/{third}/plans/2026/11";
