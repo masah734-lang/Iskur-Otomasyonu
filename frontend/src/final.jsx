@@ -372,35 +372,58 @@ export function Tasks({ id, advisor, run, busy }) {
  </>;
 }
 
+function ReportResult({ result, empty, children }) {
+ if (result.error) return <p className="error" role="alert">{result.error}</p>;
+ if (!result.rows) return <p role="status">Rapor yükleniyor…</p>;
+ if (result.rows.length === 0) return <p role="status">{empty}</p>;
+ return <>
+  <p role="status">{result.label ? result.label + ' · ' : ''}{result.rows.length} kayıt bulundu.</p>
+  {children(result.rows)}
+ </>;
+}
+
 export function Reports({ id, student, management, canExport, look, run, busy }) {
- const [rows, setRows] = useState([]);
- const [warnings, setWarnings] = useState([]);
- const [taskReport, setTaskReport] = useState([]);
- const [applied, setApplied] = useState(null);
+ const [work, setWork] = useState({});
+ const [warnings, setWarnings] = useState({});
+ const [tasks, setTasks] = useState({});
  const [year, setYear] = useState(localToday().slice(0, 4));
  const [month, setMonth] = useState(localToday().slice(5, 7));
- const [filterStudent, setFilterStudent] = useState(false);
  const form = useRef(null);
+ const latestSearch = useRef(0);
+ const monthName = number => new Date(2026, number - 1, 1).toLocaleDateString('tr-TR', { month: 'long' });
 
  function search() {
+  const searchId = ++latestSearch.current;
   const input = Object.fromEntries(new FormData(form.current));
   const query = new URLSearchParams(Object.entries(input).filter(([, value]) => value));
-  if ((filterStudent || student) && id) query.set('participationId', id);
+  if (id) query.set('participationId', id);
   const tasksQuery = new URLSearchParams(query);
+  tasksQuery.delete('attendanceStatus');
   query.delete('completed');
-  run(async () => {
-   const [report, limits, tasks] = await Promise.all([
-    api('reports/work?' + query), management ? api('reports/warnings') : [],
-    student ? [] : api('reports/tasks?' + tasksQuery)
-   ]);
-   setRows(report);
-   setWarnings(limits);
-   setTaskReport(tasks);
-   setApplied(query.toString());
-  });
+  const label = input.month ? monthName(Number(input.month)) + ' ' + input.year : input.year;
+
+  async function load(endpoint, update, details = {}) {
+   update({});
+   try {
+    const rows = await api(endpoint);
+    if (!Array.isArray(rows)) throw new Error('Sunucudan beklenen rapor verisi gelmedi.');
+    if (searchId === latestSearch.current) update({ rows, ...details });
+   } catch (error) {
+    if (searchId === latestSearch.current) update({ error: error.message });
+   }
+  }
+
+  load('reports/work?' + query, setWork, { query: query.toString(), label });
+  if (!student) load('reports/tasks?' + tasksQuery, setTasks, { label });
+  if (management) load('reports/warnings', setWarnings);
  }
 
- useEffect(() => { search(); }, [id, filterStudent]);
+ useEffect(() => {
+  search();
+  return () => { latestSearch.current++; };
+ }, [id]);
+
+ const loadingWork = !work.rows && !work.error;
 
  return <>
   <section className="card"><h2>Çalışma dökümü</h2>
@@ -408,7 +431,7 @@ export function Reports({ id, student, management, canExport, look, run, busy })
     <Field label="Yıl" name="year" type="number" min="2020" max="2100" value={year} onChange={e => setYear(e.target.value)} required/>
     <label>Ay<select name="month" value={Number(month) || ''} onChange={e => setMonth(e.target.value)}>
      <option value="">Yılın tamamı</option>{Array.from({ length: 12 }, (_, index) => <option key={index + 1} value={index + 1}>
-      {new Date(2026, index, 1).toLocaleDateString('tr-TR', { month: 'long' })}</option>)}
+      {monthName(index + 1)}</option>)}
     </select></label>
     {!student && <>
      <Filter label="Eğitim bölümü" name="departmentId" options={look.departments}/>
@@ -418,14 +441,12 @@ export function Reports({ id, student, management, canExport, look, run, busy })
      <Filter label="Görev durumu" name="completed" options={[{ id: 'true', name: 'Tamamlandı' }, { id: 'false', name: 'Tamamlanmadı' }]}/>
     </>}
     <Filter label="Yoklama durumu" name="attendanceStatus" options={['Pending', 'Present', 'Absent', 'OnLeave'].map(id => ({ id, name: statusNames[id] }))}/>
-    {!student && id && <label className="check"><input type="checkbox" checked={filterStudent}
-      onChange={event => setFilterStudent(event.target.checked)}/>Yalnızca seçili öğrenci</label>}
-    <button disabled={busy}>Raporu getir</button>
-    {canExport && <button type="button" className="ghost" disabled={busy || applied === null} onClick={() =>
-     run(() => download('reports/work?' + applied + '&csv=true', 'Iskur-Calisma.csv'))}>CSV indir</button>}
+    <button type="submit" disabled={busy || loadingWork}>{loadingWork ? 'Rapor getiriliyor…' : 'Raporu getir'}</button>
+    {canExport && <button type="button" className="ghost" disabled={busy || !work.query} onClick={() =>
+     run(() => download('reports/work?' + work.query + '&csv=true', 'Iskur-Calisma.csv'))}>CSV indir</button>}
    </form>
-   <DataTable columns={['Öğrenci', 'Ay', 'Görev yeri', 'Planlanan', 'Gerçekleşen', 'İzinli / devamsız gün']}
-    empty="Bu filtrelerde onaylı çalışma kaydı bulunamadı.">
+   <ReportResult result={work} empty={`${work.label} döneminde bu filtrelere uyan onaylı çalışma günü bulunamadı.`}>
+    {rows => <DataTable columns={['Öğrenci', 'Ay', 'Görev yeri', 'Planlanan', 'Gerçekleşen', 'İzinli / devamsız gün']}>
     {rows.map((row, index) => <tr key={index}>
      <td><strong>{row.fullName}</strong><small>{row.studentNumber} · {row.department}</small>
       {management && <small>{row.nationalId} · {row.iban}</small>}</td>
@@ -434,23 +455,28 @@ export function Reports({ id, student, management, canExport, look, run, busy })
      <td>{row.actualDates.length} gün · {duration(row.actualMinutes)}<small>{row.actualDates.map(d => d.slice(8)).join(', ')}</small></td>
      <td>{row.leaveDays} / {row.absentDays}</td>
     </tr>)}
-   </DataTable>
+   </DataTable>}
+   </ReportResult>
   </section>
   {!student && <section className="card"><h2>Görev dökümü</h2>
-   <DataTable columns={['Öğrenci', 'Danışman', 'Görev', 'Hedef tarih', 'Durum', 'Not sayısı']} empty="Bu filtrelerde görev bulunamadı.">
-    {taskReport.map(row => <tr key={row.id}><td>{row.fullName}</td><td>{row.advisor}</td>
+   <ReportResult result={tasks} empty="Bu filtrelerde görev bulunamadı.">
+   {rows => <DataTable columns={['Öğrenci', 'Danışman', 'Görev', 'Hedef tarih', 'Durum', 'Not sayısı']}>
+    {rows.map(row => <tr key={row.id}><td>{row.fullName}</td><td>{row.advisor}</td>
      <td>{row.description}</td><td>{row.dueDate}</td><td>{row.completed ? 'Tamamlandı' : 'Tamamlanmadı'}</td>
      <td>{row.assessmentCount}</td></tr>)}
-   </DataTable>
+   </DataTable>}
+   </ReportResult>
   </section>}
   {management && <section className="card"><h2>İzin ve devamsızlık uyarıları</h2>
-   <DataTable columns={['Öğrenci', 'Kalan izin', 'Bekleyen izin', 'Devamsızlık', 'Uyarı']} empty="Eşik uyarısı bulunan öğrenci yok.">
-    {warnings.map(row => <tr key={row.id}>
+   <ReportResult result={warnings} empty="Eşik uyarısı bulunan öğrenci yok.">
+   {rows => <DataTable columns={['Öğrenci', 'Kalan izin', 'Bekleyen izin', 'Devamsızlık', 'Uyarı']}>
+    {rows.map(row => <tr key={row.id}>
      <td>{row.fullName}<small>{row.studentNumber}</small></td><td>{row.remaining} gün</td>
      <td>{row.pending} gün</td><td>{row.absent} gün</td>
      <td>{[row.leaveWarning && 'İzin eşiği', row.absenceWarning && 'Devamsızlık eşiği'].filter(Boolean).join(' · ')}</td>
     </tr>)}
-   </DataTable>
+   </DataTable>}
+   </ReportResult>
   </section>}
  </>;
 }
